@@ -1,0 +1,78 @@
+# =============================================================================
+# 命令注入漏洞修复任务 — task.yaml
+# =============================================================================
+# 任务目标：修复 Python 命令执行中的命令注入漏洞，
+#           将 shell 字符串替换为安全的参数列表调用。
+# =============================================================================
+
+id: "command-injection-fix-001"
+title: "修复命令注入漏洞"
+type: "code_fix"
+difficulty: "medium"
+source: "training-gym"
+languages:
+  - python
+
+test_cases_path: "tests/"
+
+evaluation:
+  metrics:
+    - name: "functional"
+      weight: 1.0
+      type: "pytest"
+      config:
+        test_pattern: "tests/test_cmd_inject_001.py"
+        timeout_seconds: 30
+
+    - name: "security"
+      weight: 1.0
+      type: "static_analysis"
+      config:
+        rules:
+          - "no_shell_equal_true"
+          - "no_os_system_with_user_input"
+
+tags:
+  - "python"
+  - "security"
+  - "command-injection"
+  - "code-fix"
+
+reward_virtual: 50
+
+description: |
+  ## 任务描述
+
+  给定一段包含命令注入漏洞的 Python 代码，请修复其中的安全问题。
+
+  ### 漏洞类型
+  - 使用 `os.system()` 或 `os.popen()` 拼接用户输入执行命令
+  - 使用 `subprocess` 模块时设置 `shell=True` 并拼接用户输入
+  - 直接使用字符串格式化将用户输入嵌入命令字符串
+
+  ### 修复要求
+  1. 必须使用 `subprocess.run()` 或 `subprocess.Popen()` 并传入参数列表（list），而非字符串
+  2. 不得设置 `shell=True`
+  3. 保持原有业务逻辑不变
+  4. 保持函数签名不变
+  5. 安全处理用户输入中的特殊字符（如空格、引号、分号等）
+
+  ### 输入格式
+  ```python
+  import os
+  def ping_host(hostname):
+      # BUG: 直接拼接用户输入到 shell 命令
+      os.system(f'ping -c 1 {hostname}')
+  ```
+
+  ### 期望输出格式
+  ```python
+  import subprocess
+  def ping_host(hostname):
+      # ✅ 安全：使用参数列表，不经过 shell
+      subprocess.run(['ping', '-c', '1', hostname], capture_output=True)
+  ```
+
+  ### 评分标准
+  - **功能正确性（50%）**：修复后的代码能正确执行并返回预期结果
+  - **安全性（50%）**：不使用 `os.system()`、不使用 `shell=True`、不拼接字符串

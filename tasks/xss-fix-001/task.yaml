@@ -1,0 +1,88 @@
+# =============================================================================
+# XSS跨站脚本漏洞修复任务 — task.yaml
+# =============================================================================
+# 任务目标：修复 Python Flask 应用中的 XSS（跨站脚本）漏洞，
+#           将用户输入直接渲染到 HTML 改为经过转义处理。
+# =============================================================================
+
+id: "xss-fix-001"
+title: "修复XSS跨站脚本漏洞"
+type: "code_fix"
+difficulty: "medium"
+source: "training-gym"
+languages:
+  - python
+
+test_cases_path: "tests/"
+
+evaluation:
+  metrics:
+    - name: "functional_pass"
+      weight: 1.0
+      type: "pytest"
+      config:
+        test_pattern: "tests/test_xss_001.py"
+        timeout_seconds: 30
+
+    - name: "security_pass"
+      weight: 1.0
+      type: "static_analysis"
+      config:
+        rules:
+          - "no_direct_user_input_in_html"
+
+tags:
+  - "python"
+  - "security"
+  - "xss"
+  - "fix"
+  - "code-fix"
+
+reward_virtual: 50
+
+description: |
+  ## 任务描述
+
+  给定一段包含 XSS（跨站脚本）漏洞的 Python Flask 代码，请修复其中的安全问题。
+
+  ### 漏洞类型
+  - 直接将用户输入（如 URL 查询参数）拼接进 HTML 响应
+  - 使用 f-string 或 `format()` 将用户输入嵌入 HTML 标签
+  - 未对用户输入进行 HTML 转义
+
+  ### 修复要求
+  1. 必须使用 `html.escape()` 或 `markupsafe.escape()` 对用户输入进行转义
+  2. 也可以使用 Flask 的 `render_template_string` 并启用自动转义
+  3. 保持原有业务逻辑不变
+  4. 保持函数签名不变（或使用等价的 Flask 路由方式）
+
+  ### 输入格式
+  ```python
+  from flask import Flask, request
+
+  app = Flask(__name__)
+
+  @app.route('/')
+  def hello():
+      name = request.args.get('name', 'world')
+      # BUG: XSS - user input rendered without escaping
+      return f'<h1>Hello {name}</h1>'
+  ```
+
+  ### 期望输出格式
+  ```python
+  from flask import Flask, request
+  import html
+
+  app = Flask(__name__)
+
+  @app.route('/')
+  def hello():
+      name = request.args.get('name', 'world')
+      safe_name = html.escape(name)
+      return f'<h1>Hello {safe_name}</h1>'
+  ```
+
+  ### 评分标准
+  - **功能正确性（50%）**：修复后的代码能正确返回响应，包含正常用户名
+  - **安全性（50%）**：使用 HTML 转义，无直接插入用户输入

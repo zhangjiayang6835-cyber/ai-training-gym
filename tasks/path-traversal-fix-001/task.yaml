@@ -1,0 +1,104 @@
+# =============================================================================
+# 路径遍历漏洞修复任务 — task.yaml
+# =============================================================================
+# 任务目标：修复 Python 文件读取中的路径遍历漏洞，
+#           使用安全的路径处理方式替代直接拼接用户输入。
+# =============================================================================
+
+id: "path-traversal-fix-001"
+title: "修复路径遍历漏洞"
+type: "code_fix"
+difficulty: "medium"
+source: "training-gym"
+languages:
+  - python
+
+test_cases_path: "tests/"
+
+evaluation:
+  metrics:
+    - name: "functional_pass"
+      weight: 1.0
+      type: "pytest"
+      config:
+        test_pattern: "tests/test_path_traversal_001.py"
+        timeout_seconds: 30
+
+    - name: "security_pass"
+      weight: 1.0
+      type: "static_analysis"
+      config:
+        rules:
+          - "no_path_traversal"
+          - "uses_basename_or_abspath"
+
+tags:
+  - "security"
+  - "path-traversal"
+  - "fix"
+  - "python"
+
+reward_virtual: 50
+
+description: |
+  ## 任务描述
+
+  给定一段包含路径遍历漏洞的 Python 代码，请修复其中的安全问题。
+  路径遍历（Path Traversal）漏洞允许攻击者通过构造特殊的路径（如
+  包含 `../`）来读取系统上任意位置的文件，造成信息泄露。
+
+  ### 漏洞类型
+
+  - 直接将用户输入拼接为文件路径
+  - 未对用户输入进行 `os.path.basename()` 或类似的路径净化
+  - 未检测路径中是否包含 `..` 或 `/` 等路径穿越字符
+  - 未将最终路径限制在允许的目录范围内
+
+  ### 修复要求
+
+  1. 必须对用户输入的文件名进行路径净化处理
+  2. 推荐使用 `os.path.basename()` 提取安全的文件名
+  3. 或者使用 `os.path.abspath()` + `startswith()` 验证路径范围
+  4. 必须阻止 `../` 目录穿越攻击
+  5. 保持原有业务逻辑不变（读取 `/var/data/` 目录下的文件）
+  6. 保持函数签名不变
+
+  ### 输入格式
+
+  ```python
+  # 包含路径遍历漏洞的 Python 函数
+  def read_file(filename):
+      # BUG: 用户输入直接拼接到文件路径中
+      with open(f'/var/data/{filename}', 'r') as f:
+          return f.read()
+  ```
+
+  ### 期望输出格式（两种方式均可）
+
+  方式一 — 使用 `os.path.basename()`：
+  ```python
+  import os
+
+  def read_file(filename):
+      safe_name = os.path.basename(filename)
+      with open(f'/var/data/{safe_name}', 'r') as f:
+          return f.read()
+  ```
+
+  方式二 — 使用 `os.path.abspath()` 验证：
+  ```python
+  import os
+
+  def read_file(filename):
+      safe_path = os.path.abspath(f'/var/data/{filename}')
+      base = os.path.abspath('/var/data/')
+      if not safe_path.startswith(base):
+          raise ValueError("Invalid file path")
+      with open(safe_path, 'r') as f:
+          return f.read()
+  ```
+
+  ### 评分标准
+
+  - **功能正确性（50%）**：修复后的代码能正确读取 `/var/data/` 目录下的文件
+  - **安全性（50%）**：路径遍历漏洞已被修复，无法读取目录外的文件
