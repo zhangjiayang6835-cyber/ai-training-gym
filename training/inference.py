@@ -12,6 +12,7 @@ inference.py — LoRA 模型推理脚本
 import argparse
 import json
 import logging
+import os
 import sys
 from typing import Optional
 
@@ -74,6 +75,11 @@ def load_model(
 
     # 加载 LoRA adapter
     logger.info(f"🔧 加载 LoRA adapter: {adapter_path}")
+    # SECURITY: Validate adapter path is a trusted directory (not arbitrary pickle)
+    if not os.path.isdir(adapter_path):
+        raise ValueError(f"Adapter path must be a directory: {adapter_path}")
+    if not os.path.exists(os.path.join(adapter_path, "adapter_config.json")):
+        raise ValueError(f"Adapter directory missing adapter_config.json: {adapter_path}")
     model = PeftModel.from_pretrained(model, adapter_path)
 
     model.eval()
