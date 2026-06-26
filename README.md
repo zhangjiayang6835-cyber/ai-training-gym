@@ -51,8 +51,8 @@
 
 | 项目 | 说明 |
 |------|------|
-| [honeycode-honeypot](https://github.com/your-org/honeycode-honeypot) | 数据采集与标注平台，capture 原始提交数据 |
-| [eval-engine](https://github.com/your-org/eval-engine) | 独立评测引擎，支持多维度指标计算与报告生成 |
+| [honeycode-honeypot](https://github.com/zhangjiayang6835-cyber/honeycode-honeypot) | 数据采集与标注平台，capture 原始提交数据 |
+| [eval-engine](https://github.com/zhangjiayang6835-cyber/eval-engine) | 独立评测引擎，支持多维度指标计算与报告生成 |
 
 `AI Training Gym` 位于两者之间：**从 honeycode-honeypot 获取原始数据 → 转换为标准训练格式 → 训练模型 → 提交到 eval-engine 进行深度评测**。
 
@@ -64,7 +64,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-org/ai-training-gym.git
+git clone https://github.com/zhangjiayang6835-cyber/ai-training-gym.git
 cd ai-training-gym
 
 # 创建虚拟环境
@@ -192,7 +192,7 @@ of this software and associated documentation files...
 
 - [HuggingFace Transformers](https://github.com/huggingface/transformers)
 - [PEFT](https://github.com/huggingface/peft)
-- [HoneyCode Honeypot](https://github.com/your-org/honeycode-honeypot)
+- [HoneyCode Honeypot](https://github.com/zhangjiayang6835-cyber/honeycode-honeypot)
 - 所有贡献者 ❤️
 
 ---
