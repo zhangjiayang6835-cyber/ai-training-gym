@@ -16,7 +16,7 @@ test_cases_path: "tests/"
 
 evaluation:
   metrics:
-    - name: "functional"
+    - name: "functional_pass"
       weight: 1.0
       type: "pytest"
       config:

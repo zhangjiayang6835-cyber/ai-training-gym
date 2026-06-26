@@ -17,14 +17,14 @@ test_cases_path: "tests/"
 
 evaluation:
   metrics:
-    - name: "functional"
+    - name: "functional_pass"
       weight: 1.0
       type: "pytest"
       config:
         test_pattern: "tests/test_sql_inject_001.py"
         timeout_seconds: 30
 
-    - name: "security"
+    - name: "security_pass"
       weight: 1.0
       type: "static_analysis"
       config:
