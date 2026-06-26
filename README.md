@@ -1,7 +1,8 @@
-# 🏋️ AI训练场 (AI Training Gym)
+# 🏋️ AI Training Gym — AI安全训练数据集 2500+样本
+### 5类OWASP漏洞覆盖 · LoRA微调流水线 · JSONL格式 · 最适合LLM安全微调的开源数据集
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-active--development-blueviolet?style=flat-square" alt="Status">
+  <img src="https://img.shields.io/badge/dataset-2500%2B%20samples-brightgreen?style=flat-square" alt="2500+ samples">
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square&logo=python" alt="Python">
   <img src="https://img.shields.io/badge/framework-HuggingFace%20%7C%20PEFT-yellow?style=flat-square" alt="Framework">
