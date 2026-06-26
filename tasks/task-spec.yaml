@@ -1,0 +1,125 @@
+# =============================================================================
+# AI Training Gym — 任务规范模板 (Task Specification Template)
+# =============================================================================
+# 此文件定义了 AI Training Gym 中所有任务的 YAML 规范。
+# 创建新任务时请复制此模板并填充相应字段。
+# =============================================================================
+
+# -------------------- 基本信息 --------------------
+# 任务唯一标识符，使用 kebab-case，全局唯一
+# 示例: "sql-injection-fix-001", "math-word-problems-001"
+id: "your-task-id-here"
+
+# 任务标题（中文），简短描述任务内容
+# 示例: "SQL注入漏洞修复", "数学应用题求解"
+title: "您的任务标题"
+
+# 任务类型，可选值:
+#   code_fix       - 代码修复任务（模型需输出修复后的代码）
+#   generation     - 生成任务（模型需生成文本/代码）
+#   classification - 分类任务（模型需输出类别标签）
+#   qa             - 问答任务（模型需回答问题）
+type: "code_fix"  # code_fix | generation | classification | qa
+
+# 难度级别
+#   easy   - 简单，单一步骤
+#   medium - 中等，需要多步骤推理
+#   hard   - 困难，需要深入理解或创造性解决
+difficulty: "easy"  # easy | medium | hard
+
+# 数据来源标识
+source: "training-gym"  # training-gym | honeycode-honeypot | external
+
+# -------------------- 语言信息 --------------------
+# 涉及的编程语言列表（仅 code_fix 类型必填）
+languages:
+  - python
+  # - javascript
+  # - java
+  # - go
+
+# -------------------- 测试配置 --------------------
+# 测试用例路径，相对于 tasks/<task-id>/ 目录
+# 指向包含测试数据和预期输出的目录或文件
+test_cases_path: "tests/"
+
+# -------------------- 评测配置 --------------------
+evaluation:
+  # 评测指标列表，每个指标包含名称和配置
+  metrics:
+    # ----- 功能正确性指标 -----
+    - name: "functional"
+      # 权重，用于计算综合得分
+      weight: 1.0
+      # 指标类型
+      type: "pytest"
+      # 配置参数
+      config:
+        test_pattern: "tests/test_*.py"
+        timeout_seconds: 30
+
+    # ----- 精确匹配指标（用于 generation 类型） -----
+    - name: "exact_match"
+      weight: 1.0
+      type: "exact_match"
+      config:
+        # 是否忽略大小写
+        case_sensitive: false
+        # 是否去除两端空白
+        strip: true
+
+    # ----- 安全性指标（用于 code_fix 类型） -----
+    # - name: "security"
+    #   weight: 1.0
+    #   type: "static_analysis"
+    #   config:
+    #     rules:
+    #       - "no_string_concatenation_in_query"
+    #       - "no_hardcoded_credentials"
+
+    # ----- 代码质量指标 -----
+    # - name: "code_quality"
+    #   weight: 0.5
+    #   type: "lint"
+    #   config:
+    #     linter: "pylint"
+    #     max_warnings: 5
+
+# -------------------- 标签 --------------------
+# 用于分类和搜索的标签列表
+tags:
+  - "python"
+  # - "security"
+  # - "sql"
+  # - "math"
+
+# -------------------- 奖励配置 --------------------
+# 虚拟奖励分值（用于训练时的奖励信号）
+reward_virtual: 0
+
+# -------------------- 描述信息 --------------------
+# 任务详细描述（中文）
+# 说明任务的目标、输入输出格式、注意事项等
+description: |
+  请在此处填写任务描述。
+
+  格式要求：
+  - 使用 Markdown 格式
+  - 说明任务目标
+  - 说明输入格式
+  - 说明期望输出格式
+  - 提供示例（如有）
+
+# -------------------- 可选字段 --------------------
+# 任务版本号
+# version: "1.0.0"
+
+# 依赖的其它任务 ID 列表
+# depends_on:
+#   - "some-prerequisite-task"
+
+# 任务创建日期
+# created_at: "2025-01-01"
+
+# 任务更新日期
+# updated_at: "2025-01-01"

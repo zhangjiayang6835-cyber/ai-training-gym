@@ -1,0 +1,81 @@
+# =============================================================================
+# SQL注入漏洞修复任务 — task.yaml
+# =============================================================================
+# 任务目标：修复 Python SQL 查询中的 SQL 注入漏洞，
+#           将字符串拼接改为参数化查询。
+# =============================================================================
+
+id: "sql-injection-fix-001"
+title: "SQL注入漏洞修复"
+type: "code_fix"
+difficulty: "medium"
+source: "training-gym"
+languages:
+  - python
+
+test_cases_path: "tests/"
+
+evaluation:
+  metrics:
+    - name: "functional"
+      weight: 1.0
+      type: "pytest"
+      config:
+        test_pattern: "tests/test_sql_inject_001.py"
+        timeout_seconds: 30
+
+    - name: "security"
+      weight: 1.0
+      type: "static_analysis"
+      config:
+        rules:
+          - "no_string_concatenation_in_query"
+
+tags:
+  - "python"
+  - "security"
+  - "sql"
+  - "injection"
+  - "code-fix"
+
+reward_virtual: 50
+
+description: |
+  ## 任务描述
+
+  给定一段包含 SQL 注入漏洞的 Python 代码，请修复其中的安全问题。
+
+  ### 漏洞类型
+  - 使用 f-string 或 `format()` 拼接 SQL 查询字符串
+  - 使用 `%` 格式化操作符拼接 SQL 查询
+  - 直接将用户输入嵌入 SQL 语句
+
+  ### 修复要求
+  1. 必须使用参数化查询（parameterized query）
+  2. SQLite3: 使用 `?` 占位符，通过第二个参数传入元组
+  3. 保持原有业务逻辑不变
+  4. 保持函数签名不变
+
+  ### 输入格式
+  ```python
+  # 包含漏洞的 Python 函数
+  def get_user(username):
+      conn = sqlite3.connect('users.db')
+      cursor = conn.cursor()
+      cursor.execute(f"SELECT * FROM users WHERE username = '{username}'")
+      return cursor.fetchall()
+  ```
+
+  ### 期望输出格式
+  ```python
+  # 修复后的安全版本
+  def get_user(username):
+      conn = sqlite3.connect('users.db')
+      cursor = conn.cursor()
+      cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+      return cursor.fetchall()
+  ```
+
+  ### 评分标准
+  - **功能正确性（50%）**：修复后的代码能正确执行并返回结果
+  - **安全性（50%）**：使用参数化查询，无字符串拼接

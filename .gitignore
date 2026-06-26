@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+lib/
+lib64/
+venv/
+.venv/
+env/
+
+# Environment
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model outputs
+outputs/
+checkpoints/
+*.pt
+*.bin
+*.safetensors
+*.pth
+
+# Datasets
+datasets/*.arrow
+datasets/*.cache
+
+# Logs
+logs/
+*.log
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Config (local overrides)
+config.local.yaml

@@ -1,0 +1,73 @@
+# =============================================================================
+# 数学应用题任务 — task.yaml
+# =============================================================================
+# 任务目标：求解中文数学应用题，输出答案和解题步骤。
+# =============================================================================
+
+id: "math-word-problems-001"
+title: "数学应用题求解"
+type: "generation"
+difficulty: "easy"
+source: "training-gym"
+languages:
+  - python
+
+test_cases_path: "tests/"
+
+evaluation:
+  metrics:
+    - name: "functional"
+      weight: 1.0
+      type: "pytest"
+      config:
+        test_pattern: "tests/test_math_001.py"
+        timeout_seconds: 30
+
+    - name: "exact_match"
+      weight: 1.0
+      type: "exact_match"
+      config:
+        case_sensitive: false
+        strip: true
+
+tags:
+  - "python"
+  - "math"
+  - "word-problems"
+  - "generation"
+  - "chinese"
+
+reward_virtual: 30
+
+description: |
+  ## 任务描述
+
+  求解中文数学应用题，输出准确的数值答案。
+
+  ### 题目格式
+  题目为中文描述的小学数学应用题，涵盖加法、减法、乘法、除法场景。
+  例如："小明有 15 个苹果，小红有 23 个苹果，他们一共有多少个苹果？"
+
+  ### 输入格式
+  一个包含 question 字段的 JSON 对象：
+  ```json
+  {
+    "question": "小明有 15 个苹果，小红有 23 个苹果，他们一共有多少个苹果？"
+  }
+  ```
+
+  ### 输出格式
+  一个包含 answer（数值答案）和 steps（解题步骤）的 JSON 对象：
+  ```json
+  {
+    "answer": 38,
+    "steps": [
+      "小明有 15 个苹果",
+      "小红有 23 个苹果",
+      "总共：15 + 23 = 38"
+    ]
+  }
+  ```
+
+  ### 评分标准
+  - **精确匹配（100%）**：答案必须与标准答案完全一致
