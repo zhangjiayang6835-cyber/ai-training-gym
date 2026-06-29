@@ -1,0 +1,25 @@
+id: "ssrf-fix-001"
+title: "SSRF漏洞修复"
+type: "code_fix"
+difficulty: "medium"
+source: "training-gym"
+languages: ["python"]
+test_cases_path: "tests/test_ssrf_001.py"
+evaluation:
+  metrics:
+    - name: "functional_pass"
+      weight: 1.0
+      type: "pytest"
+    - name: "security_pass"
+      weight: 1.0
+      type: "static_analysis"
+      config:
+        rules: ["no_url_open_to_internal"]
+tags: ["python","security","ssrf","code-fix"]
+reward_virtual: 75
+description: |
+  修复SSRF（服务器端请求伪造）漏洞。
+  防止攻击者利用服务器发起内部网络请求。
+hints:
+  - "使用 allowlist 验证目标URL的host和scheme"
+  - "屏蔽私有IP段（127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16）"
