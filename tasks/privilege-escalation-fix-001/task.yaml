@@ -1,0 +1,85 @@
+# =============================================================================
+# 权限提升漏洞修复任务 — task.yaml
+# =============================================================================
+# 任务目标：修复 Python Web 应用中的水平/垂直权限提升漏洞，
+#           添加权限校验确保用户只能访问自己的资源。
+# =============================================================================
+
+id: "privilege-escalation-fix-001"
+title: "权限提升漏洞修复"
+type: "code_fix"
+difficulty: "medium"
+source: "training-gym"
+languages:
+  - python
+
+test_cases_path: "tests/"
+
+evaluation:
+  metrics:
+    - name: "functional_pass"
+      weight: 1.0
+      type: "pytest"
+      config:
+        test_pattern: "tests/test_privilege_escalation.py"
+        timeout_seconds: 30
+
+    - name: "security_pass"
+      weight: 1.0
+      type: "static_analysis"
+      config:
+        rules:
+          - "check_authorization_before_resource_access"
+          - "no_user_id_tampering"
+
+tags:
+  - "python"
+  - "security"
+  - "authorization"
+  - "privilege-escalation"
+  - "code-fix"
+
+reward_virtual: 60
+
+description: |
+  ## 任务描述
+
+  给定一段包含权限提升漏洞的 Python Web 代码，请修复其中的授权缺陷。
+
+  ### 漏洞类型
+  - **水平权限提升（Horizontal Privilege Escalation）**：普通用户可以访问其他用户的私有数据
+  - 缺少资源级别的所有权校验
+  - 直接从 URL/请求参数获取目标用户 ID 后未验证当前用户是否有权限访问
+
+  ### 修复要求
+  1. 在访问资源前必须验证当前用户是否为资源所有者
+  2. 不能仅依赖前端传来的 user_id 参数决定访问权限
+  3. 保持原有业务逻辑不变
+  4. 保持函数签名不变
+
+  ### 输入格式
+  ```python
+  # 包含漏洞的 Python 代码
+  def get_user_profile(current_user, target_user_id):
+      conn = get_db()
+      cursor = conn.cursor()
+      cursor.execute("SELECT * FROM profiles WHERE user_id = ?", (target_user_id,))
+      return cursor.fetchone()
+  ```
+
+  ### 期望输出格式
+  ```python
+  # 修复后的安全版本
+  def get_user_profile(current_user, target_user_id):
+      # 权限校验：当前用户只能查看自己的资料
+      if current_user.id != target_user_id:
+          raise PermissionError("无权访问其他用户的资料")
+      conn = get_db()
+      cursor = conn.cursor()
+      cursor.execute("SELECT * FROM profiles WHERE user_id = ?", (target_user_id,))
+      return cursor.fetchone()
+  ```
+
+  ### 评分标准
+  - **功能正确性（40%）**：修复后的代码能正确执行业务逻辑
+  - **安全性（60%）**：包含有效的权限校验，阻止越权访问
