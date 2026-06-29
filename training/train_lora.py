@@ -27,13 +27,7 @@ from transformers import (
     DataCollatorForLanguageModeling,
     set_seed,
 )
-from peft import (
-    LoraConfig,
-    get_peft_model,
-    TaskType,
-    PeftModel,
-    prepare_model_for_kbit_training,
-)
+from peft import LoraConfig, TaskType, get_peft_model
 
 # ============================================================================
 # 日志配置
@@ -96,6 +90,36 @@ class MathProblemDataset(Dataset):
         }
 
 
+def infer_lora_target_modules(model) -> List[str]:
+    """Pick LoRA target modules for common causal language model families."""
+    model_type = getattr(model.config, "model_type", "").lower()
+    known_targets = {
+        "gpt2": ["c_attn"],
+        "gpt_neo": ["q_proj", "v_proj"],
+        "gpt_neox": ["query_key_value"],
+        "llama": ["q_proj", "v_proj"],
+        "mistral": ["q_proj", "v_proj"],
+        "qwen2": ["q_proj", "v_proj"],
+        "phi": ["q_proj", "v_proj"],
+    }
+    if model_type in known_targets:
+        return known_targets[model_type]
+
+    module_names = {name.rsplit(".", 1)[-1] for name, _ in model.named_modules()}
+    for candidates in (
+        ["q_proj", "v_proj"],
+        ["query_key_value"],
+        ["c_attn"],
+    ):
+        if all(candidate in module_names for candidate in candidates):
+            return candidates
+
+    raise ValueError(
+        "Could not infer LoRA target modules for model type "
+        f"'{model_type or 'unknown'}'. Pass --lora_target_modules explicitly."
+    )
+
+
 # ============================================================================
 # 训练函数
 # ============================================================================
@@ -112,6 +136,7 @@ def train_lora(
     lora_r: int = 8,
     lora_alpha: int = 16,
     lora_dropout: float = 0.05,
+    lora_target_modules: Optional[List[str]] = None,
     seed: int = 42,
     use_cpu: bool = False,
 ):
@@ -166,12 +191,15 @@ def train_lora(
     # ------------------------------------------------------------------
     logger.info("🔧 配置 LoRA...")
 
+    target_modules = lora_target_modules or infer_lora_target_modules(model)
+    logger.info(f"LoRA target modules: {target_modules}")
+
     lora_config = LoraConfig(
         task_type=TaskType.CAUSAL_LM,
         r=lora_r,
         lora_alpha=lora_alpha,
         lora_dropout=lora_dropout,
-        target_modules=["q_proj", "v_proj"],  # GPT-2 注意力层
+        target_modules=target_modules,
         bias="none",
     )
 
@@ -301,6 +329,8 @@ def parse_args():
                         help="LoRA alpha")
     parser.add_argument("--lora_dropout", type=float, default=0.05,
                         help="LoRA dropout")
+    parser.add_argument("--lora_target_modules", type=str, default=None,
+                        help="逗号分隔的 LoRA 目标层；默认按模型架构自动推断")
     parser.add_argument("--seed", type=int, default=42,
                         help="随机种子")
     parser.add_argument("--use_cpu", action="store_true",
@@ -333,6 +363,10 @@ if __name__ == "__main__":
         lora_r=args.lora_r,
         lora_alpha=args.lora_alpha,
         lora_dropout=args.lora_dropout,
+        lora_target_modules=(
+            [item.strip() for item in args.lora_target_modules.split(",") if item.strip()]
+            if args.lora_target_modules else None
+        ),
         seed=args.seed,
         use_cpu=args.use_cpu,
     )
