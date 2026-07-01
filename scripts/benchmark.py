@@ -69,7 +69,7 @@ def run_pytest(task_path: str, test_dir: str) -> Tuple[bool, str, Dict]:
     logger.info(f"🔍 运行 pytest: {test_path}")
 
     result = subprocess.run(
-        ["python", "-m", "pytest", test_path, "-v", "--tb=short", "--json-report"],
+        ["python", "-m", "pytest", test_path, "-v", "--tb=short"],
         capture_output=True,
         text=True,
         timeout=120,
