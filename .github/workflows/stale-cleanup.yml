@@ -1,0 +1,49 @@
+name: Stale Issue & PR Cleanup
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # 每周一早上6点 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Issue 设置
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+          stale-issue-label: "stale"
+          stale-issue-message: |
+            ⏰ 此 Issue 已有 60 天未活动。如果仍然相关，请回复更新。
+            14 天后将自动关闭。
+
+          close-issue-message: |
+            🧹 由于长期不活动，此 Issue 已自动关闭。
+            如果需要，可以随时重新打开。
+
+          # PR 设置
+          days-before-pr-stale: 30
+          days-before-pr-close: 7
+          stale-pr-label: "stale"
+          stale-pr-message: |
+            ⏰ 此 PR 已有 30 天未活动。如果仍在进行中，请回复更新。
+            7 天后将自动关闭。
+
+          close-pr-message: |
+            🧹 由于长期不活动，此 PR 已自动关闭。
+            如果需要，可以随时重新打开。
+
+          # 排除带特定标签的 Issue/PR
+          exempt-issue-labels: "enhancement,bug,security,bounty,question"
+          exempt-pr-labels: "security,bounty,bot"
+
+          # 操作限制
+          operations-per-run: 50
+          remove-stale-when-updated: true
