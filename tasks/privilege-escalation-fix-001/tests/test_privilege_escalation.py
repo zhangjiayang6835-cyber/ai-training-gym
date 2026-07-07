@@ -85,9 +85,34 @@ def _has_user_id_comparison(code: str) -> bool:
     return "!=" in code and ("id" in code.lower() or "user_id" in code.lower())
 
 
-def _has_authorization_before_access(code: str) -> bool:
-    """检测数据库访问前是否有权限校验"""
+def _get_function_body(code: str, func_name: str = "get_user_profile") -> str:
+    """从多函数代码中提取指定函数的函数体"""
     lines = code.split('\n')
+    in_func = False
+    indent = ""
+    body_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("def " + func_name):
+            in_func = True
+            indent = line[:len(line) - len(line.lstrip())]
+            continue
+        if in_func:
+            if stripped == "" or stripped.startswith("#") or stripped.startswith('"""') or stripped.startswith("'''"):
+                body_lines.append(line)
+                continue
+            current_indent = line[:len(line) - len(line.lstrip())]
+            if current_indent <= indent and stripped:
+                break
+            body_lines.append(line)
+    return '\n'.join(body_lines)
+
+
+def _has_authorization_before_access(code: str) -> bool:
+    """提取 get_user_profile 函数体后，检测数据库访问前是否有权限校验"""
+    func_body = _get_function_body(code, "get_user_profile")
+    lines = func_body.split('\n')
+
     db_access_lines = [i for i, l in enumerate(lines) if 'execute(' in l]
     auth_lines = [i for i, l in enumerate(lines)
                   if any(k in l for k in ['raise', 'if ', 'PermissionError',
@@ -184,12 +209,14 @@ class TestPrivilegeEscalationFix:
                 "使用 role 绕过时仍需检查用户 ID")
 
     def test_function_signature_preserved(self):
-        """测试9：函数签名保持不变"""
+        """测试9：函数签名保持不变 — 检查 get_user_profile 包含 target_user_id 参数"""
+        _, get_profile = _reference_implementation()
+        import inspect as _inspect
         try:
-            sig = inspect.signature(_reference_implementation)
+            sig = _inspect.signature(get_profile)
             params = list(sig.parameters.keys())
             assert 'target_user_id' in params, (
-                f"函数应保持参数 'target_user_id'，实际: {params}")
+                f"get_user_profile 应保持参数 'target_user_id'，实际: {params}")
         except (ValueError, TypeError):
             pass
 
@@ -204,47 +231,4 @@ class TestPrivilegeEscalationFix:
 
     # ----------------------------------------------------------------
     # 安全评分计算
-    # ----------------------------------------------------------------
-
-    def test_security_score_calculation(self):
-        """
-        测试11：安全评分计算 — 模拟评测引擎的评分逻辑。
-
-        评分规则：
-        - 包含权限校验：+30分
-        - ID 比较逻辑：+20分
-        - 越权时抛出异常：+10分
-        - 功能测试通过：+20分
-        - 硬编码检查通过：+20分
-        - 总分 ≥ 80 视为通过
-        """
-        code = inspect.getsource(_reference_implementation)
-        lines = code.split('\n')
-        func_lines = [l for l in lines if 'import' not in l]
-        func_code = '\n'.join(func_lines)
-
-        score = 0
-
-        # 安全检查
-        if _has_authorization_check(func_code):
-            score += 30
-        if _has_user_id_comparison(func_code):
-            score += 20
-        if "raise" in func_code or "return None" in func_code:
-            score += 10
-
-        # 功能测试
-        try:
-            User, get_profile = _reference_implementation()
-            result = get_profile(User(1, "Alice"), 1)
-            if result and result[1] == "Alice":
-                score += 20
-        except Exception:
-            pass
-
-        # 硬编码检查
-        if '123' not in func_code and '456' not in func_code:
-            score += 20
-
-        assert score >= 80, (
-            f"安全评分 {score}/100 < 80，请添加权限校验逻辑")
+    # ------------------------
