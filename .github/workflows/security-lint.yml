@@ -1,0 +1,52 @@
+name: Security & Lint
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - "**.md"
+      - ".gitignore"
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: "0 6 * * 1"  # 每周一早上6点 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  yaml-lint:
+    name: "YAML Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Check workflow YAMLs
+        run: |
+          yamllint -d '{extends: relaxed, rules: {line-length: disable}}' .github/workflows/
+
+      - name: Check task YAMLs
+        run: |
+          yamllint -d '{extends: relaxed, rules: {line-length: disable}}' tasks/*/task.yaml
+
+  pip-audit:
+    name: "Dependency Security Audit"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit
+        run: pip-audit -r requirements.txt --desc on
+        continue-on-error: true  # 不因审计 warnings 阻断 CI
