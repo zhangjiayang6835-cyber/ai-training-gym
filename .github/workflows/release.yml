@@ -1,0 +1,90 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. v0.2.0)"
+        required: true
+        default: "v0.2.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest tasks/ -v --tb=short
+
+      - name: Validate all task YAMLs
+        run: |
+          python -c "
+import os, yaml
+tasks_dir = 'tasks'
+errors = []
+for task_id in os.listdir(tasks_dir):
+    task_path = os.path.join(tasks_dir, task_id)
+    yaml_path = os.path.join(task_path, 'task.yaml')
+    if not os.path.isdir(task_path): continue
+    if not os.path.exists(yaml_path):
+        errors.append(f'{task_id}: missing task.yaml')
+        continue
+    with open(yaml_path, encoding='utf-8') as f:
+        try:
+            yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            errors.append(f'{task_id}: YAML error - {e}')
+if errors:
+    for e in errors: print(f'  - {e}')
+    exit(1)
+else:
+    print('All task YAMLs valid')
+"
+
+      - name: Generate Release Notes
+        id: notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          TASKS=$(ls -d tasks/*/ | wc -l)
+          TESTS=$(python -m pytest tasks/ --collect-only -q 2>&1 | tail -1 | grep -oP '\d+')
+          cat << EOF > release_notes.md
+          ## 🏋️ AI Training Gym v${VERSION}
+
+          ### 📊 统计
+          - 任务数量: **${TASKS}**
+          - 测试用例: **${TESTS}**
+
+          ### 📦 安装
+          \`\`\`bash
+          pip install -r requirements.txt
+          \`\`\`
+
+          ### 🚀 使用
+          查看 [README](https://github.com/zhangjiayang6835-cyber/ai-training-gym#readme) 获取详细说明。
+          EOF
+          echo "notes_file=release_notes.md" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release_notes.md
+          files: |
+            tasks/*/task.yaml
+            requirements.txt
+          generate_release_notes: false
+          make_latest: true
