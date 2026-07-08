@@ -1,3 +1,5 @@
+🌐 [English](README.en.md) | [中文](README.md)
+
 # 数据集格式文档 — AI Training Gym
 
 本文档说明 AI Training Gym 中使用的数据集格式规范。
