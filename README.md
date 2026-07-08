@@ -1,3 +1,5 @@
+🌐 [English](README.en.md) | [中文](README.md)
+
 # 🏋️ AI Training Gym — AI安全训练数据集 2500+样本
 ### 5类OWASP漏洞覆盖 · LoRA微调流水线 · JSONL格式 · 最适合LLM安全微调的开源数据集
 
