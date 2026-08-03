@@ -141,7 +141,7 @@ def gen_ssrf(i: int) -> Optional[Dict[str, Any]]:
     param = random.choice(["url", "target_url", "callback", "webhook"])
 
     vuln = f'def fetch_url({param}):\n    return requests.get({param})'
-    fix = f'def fetch_url({param}):\n    from urllib.parse import urlparse\n    parsed = urlparse({param})\n    blocked = ["169.254.", "127.", "10.", "172.16.", "192.168.", "::1", "0.0.0.0"]\n    if any(parsed.hostname.startswith(p) for p in blocked):\n        raise ValueError("Private/internal URL blocked")\n    ALLOWED_SCHEMES = ["https"]\n    if parsed.scheme not in ALLOWED_SCHEMES:\n        raise ValueError(f"Scheme {parsed.scheme} not allowed")\n    return requests.get({param})'
+    fix = f'def fetch_url({param}):\n    from urllib.parse import urlparse\n    parsed = urlparse({param})\n    blocked = ["169.254.", "127.", "10.", "172.16.", "192.168.", "::1", "0.0.0.0"]\n    if any(parsed.hostname.startswith(p) for p in blocked):\n        raise ValueError("Private/internal URL blocked")\n    ALLOWED_SCHEMES = ["https"]\n    if parsed.scheme not in ALLOWED_SCHEMES:\n        raise ValueError(f"Scheme {{parsed.scheme}} not allowed")\n    return requests.get({param})'
 
     return {
         "id": f"ssrf-train-{i:04d}",
