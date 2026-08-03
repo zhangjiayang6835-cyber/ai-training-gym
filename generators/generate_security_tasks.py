@@ -194,7 +194,7 @@ def gen_xxe(i: int) -> Optional[Dict[str, Any]]:
     parser = random.choice(["xml.etree.ElementTree", "lxml", "minidom"])
 
     vuln = f'from {parser} import parse\n\ndef process_xml(xml_data):\n    tree = parse(xml_data)\n    return tree'
-    fix = f'from {parser} import parse\n\ndef process_xml(xml_data):\n    parser_instance = parse\n    # Disable external entities\n    import defusedxml\n    from defusedxml import {parser.split('.')[-1]}\n    tree = {parser.split('.')[-1]}.fromstring(xml_data.read())\n    return tree'
+    fix = f'from {parser} import parse\n\ndef process_xml(xml_data):\n    parser_instance = parse\n    # Disable external entities\n    import defusedxml\n    from defusedxml import {parser.split(".")[-1]}\n    tree = {parser.split(".")[-1]}.fromstring(xml_data.read())\n    return tree'
 
     return {
         "id": f"xxe-train-{i:04d}",
