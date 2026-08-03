@@ -116,6 +116,8 @@ jobs:
         continue-on-error: false
 
       - name: 📊 运行基准评测（测试模式）
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
           python scripts/benchmark.py --ci
 
