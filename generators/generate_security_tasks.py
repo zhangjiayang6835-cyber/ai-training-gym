@@ -81,7 +81,7 @@ def gen_xss(i: int) -> Optional[Dict[str, Any]]:
         f"return render_template_string(\"<div>{'{{ user_input }}'}</div>\", user_input=user_input)",
         f'return f"<h1>Welcome, {{user_input}}</h1>"',
         f"return Template(\"<p>{{{{ name }}}}</p>\").render(name=user_input)",
-        f'return """<script>var name = "{user_input}";</script>"""',
+        f'return """<script>var name = "{{user_input}}";</script>"""',
         f'response.write("<span>" + user_input + "</span>")',
     ])
     safe = random.choice([
@@ -93,7 +93,7 @@ def gen_xss(i: int) -> Optional[Dict[str, Any]]:
 
     return {
         "id": f"xss-train-{i:04d}",
-        "question": f"修复以下代码中的XSS漏洞（{scenario}，{context}上下文）：\n```python\n{vulnerable}\n```",
+        "question": f"修复以下代码中的XSS漏洞（{scenario}，{context}上下文）：\n```python\n{dangerous}\n```",
         "answer": f"```python\n{safe}\n```",
         "source": "training-gym",
         "tags": ["xss", "security", context],
