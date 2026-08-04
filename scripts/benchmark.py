@@ -145,7 +145,7 @@ def run_exact_match_evaluation(
                 # 简单规则引擎（仅用于测试）
                 predicted = _rule_based_solve(item["question"])
 
-            is_correct = (predicted == expected)
+            is_correct = (str(predicted) == str(expected))
             if is_correct:
                 correct += 1
             total += 1
@@ -167,20 +167,25 @@ def run_exact_match_evaluation(
 
 
 def _rule_based_solve(question: str) -> Optional[int]:
-    """简单的规则引擎数学求解（仅用于测试基准测试框架）"""
+    """规则引擎数学求解（中英文兼容，仅用于测试基准测试框架）"""
     import re
     nums = [int(n) for n in re.findall(r'\d+', question)]
+    if len(nums) < 2:
+        return None
 
-    if "一共" in question and len(nums) >= 2:
-        return nums[0] + nums[1]
-    elif "还剩" in question and len(nums) >= 2:
+    q = question.lower()
+    # 除法：平均分 / share / divide equally
+    if "平均分" in q or "share" in q or "divided" in q or "equally" in q:
+        return nums[0] // nums[1] if nums[1] else None
+    # 乘法：倍 / times as many / times
+    if "倍" in q or "times as many" in q or "times" in q:
+        return nums[0] * nums[1]
+    # 减法：还剩 / fewer / left / less
+    if "还剩" in q or "fewer" in q or " left" in q or "less" in q:
         return nums[0] - nums[1]
-    elif "每" in question and "一共" in question and len(nums) >= 2:
-        return nums[0] * nums[1]
-    elif "平均分" in question and len(nums) >= 2:
-        return nums[0] // nums[1]
-    elif "倍" in question and len(nums) >= 2:
-        return nums[0] * nums[1]
+    # 加法：一共 / more / gets / buys
+    if "一共" in q or "more" in q or "gets" in q or "buys" in q:
+        return nums[0] + nums[1]
     return None
 
 
